@@ -3,10 +3,21 @@
 -- Ejecutar en: Supabase Dashboard > SQL Editor
 -- =========================================================
 
--- ENUMS
-create type if not exists public.app_role as enum ('director', 'agente');
-create type if not exists public.lead_state as enum ('No Atendido', 'No Interesado', 'Interesado', 'Cita');
-create type if not exists public.link_channel as enum ('qr', 'sms');
+-- ENUMS (CREATE TYPE no soporta IF NOT EXISTS — usar DO block)
+do $$ begin
+  create type public.app_role as enum ('director', 'agente');
+exception when duplicate_object then null;
+end $$;
+
+do $$ begin
+  create type public.lead_state as enum ('No Atendido', 'No Interesado', 'Interesado', 'Cita');
+exception when duplicate_object then null;
+end $$;
+
+do $$ begin
+  create type public.link_channel as enum ('qr', 'sms');
+exception when duplicate_object then null;
+end $$;
 
 -- =========================================================
 -- USER ROLES
