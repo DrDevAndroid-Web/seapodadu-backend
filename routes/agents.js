@@ -74,7 +74,16 @@ router.post('/', requireDirector, async (req, res, next) => {
       return next(agentError);
     }
 
-    await supabaseAdmin.from('user_roles').insert({ user_id: userId, role: 'agente' });
+    const { error: roleError } = await supabaseAdmin
+      .from('user_roles')
+      .insert({ user_id: userId, role: 'agente' });
+
+    if (roleError) {
+      // Roll back: remove agent record and auth user so state stays consistent
+      await supabaseAdmin.from('agents').delete().eq('id', agentId).catch(() => {});
+      await supabaseAdmin.auth.admin.deleteUser(userId).catch(() => {});
+      return next(roleError);
+    }
 
     res.status(201).json({ agent, tempPassword: password ? undefined : pwd });
   } catch (err) { next(err); }
